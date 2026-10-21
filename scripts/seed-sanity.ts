@@ -1,6 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
-import { getCliClient } from "sanity/cli";
+import { createClient } from "@sanity/client";
+
+import { apiVersion, dataset, projectId } from "../sanity/env";
 
 type Work = {
   title: string;
@@ -31,8 +33,19 @@ type FocusCard = {
 
 type SeedDocument = Record<string, unknown> & { _type: string };
 
-const apiVersion = "2026-06-26";
-const client = getCliClient({ apiVersion }).withConfig({ useCdn: false });
+const token = process.env.SANITY_API_WRITE_TOKEN;
+
+if (!token) {
+  throw new Error("Missing environment variable: SANITY_API_WRITE_TOKEN");
+}
+
+const client = createClient({
+  projectId,
+  dataset,
+  apiVersion,
+  token,
+  useCdn: false,
+});
 const root = process.cwd();
 
 const readJson = <T>(relativePath: string): T =>
